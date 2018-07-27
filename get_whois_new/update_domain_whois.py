@@ -400,7 +400,7 @@ def fetch_resource_data():
     domain_whois表中的域名是由domain_index中根据触发器更新的
     """
     db = MySQL(SOURCE_CONFIG)
-    sql = 'SELECT domain,update_date,expiration_date,LENGTH (details),tld,flag FROM domain_whois LIMIT 0,143246'
+    sql = 'SELECT domain,update_date,expiration_date,LENGTH (details),tld,flag FROM domain_whois WHERE flag = 1 LIMIT 0,80000'
     db.query(sql)
     query_domains = db.fetch_all_rows()  # 得到总共的数量
     db.close()
@@ -436,4 +436,7 @@ def domain_whois():
 
 
 if __name__ == '__main__':
-    domain_whois()
+
+    while 1:
+        domain_whois()
+        time.sleep(60)
