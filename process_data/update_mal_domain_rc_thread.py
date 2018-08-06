@@ -26,7 +26,7 @@ from mysql_config import SOURCE_CONFIG
 num_thread = 10  # 线程数量
 queue = Queue()  # 任务队列，存储sql
 # lock = threading.Lock()
-target_col = 'domain_rc_ttl'
+target_col = 'domain_rc'
 
 
 def fetch_mal_domains():
@@ -35,7 +35,7 @@ def fetch_mal_domains():
     """
 
     db = MySQL(SOURCE_CONFIG)
-    sql = 'SELECT domain, malicious_type FROM domain_index LIMIT 71622, 71622'
+    sql = 'SELECT domain, malicious_type FROM domain_index LIMIT 143244,71622'
     db.query(sql)
     query_domains = db.fetch_all_rows()  # 得到总共的数量
     db.close()
@@ -81,7 +81,8 @@ def nonexistent_insert_db(check_domain,rc_ttl,mal_type):
                             "ns_ttl": rc_ttl['ns_ttl'],
                             "mxs": rc_ttl['mxs'],
                             "mxs_ttl": rc_ttl['mxs_ttl'],
-                            "insert_time": insert_time
+                            "insert_time": insert_time,
+                            "last_updated": insert_time
                         }
                     ],
                      "record_time": insert_time,    # 文档插入时间
@@ -109,7 +110,7 @@ def update_time(col, domain, insert_time,cur_time):
              },
             {
                 '$set':
-                    {'dns_rc.$.insert_time': cur_time},  # 注意$的使用
+                    {'dns_rc.$.last_updated': cur_time},  # 注意$的使用
 
                 "$inc":
                     {
@@ -168,7 +169,8 @@ def insert_record(col, domain, cur_time, rc_ttl):
                 "ns_ttl": rc_ttl['ns_ttl'],
                 "mxs": rc_ttl['mxs'],
                 "mxs_ttl": rc_ttl['mxs_ttl'],
-                "insert_time": cur_time
+                "insert_time": cur_time,
+                "last_updated":cur_time
         }
     }
     try:
