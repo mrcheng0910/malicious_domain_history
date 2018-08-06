@@ -12,7 +12,6 @@ mrcheng
 创建：2018.7.19
 """
 
-import schedule
 from db_base import get_col
 from datetime import datetime
 from obtaining_rc_ttl_obj import manage_rc_ttl
@@ -36,7 +35,7 @@ def fetch_mal_domains():
     """
 
     db = MySQL(SOURCE_CONFIG)
-    sql = 'SELECT domain, malicious_type FROM domain_index LIMIT 0, 71622'
+    sql = 'SELECT domain, malicious_type FROM domain_index LIMIT 71622, 71622'
     db.query(sql)
     query_domains = db.fetch_all_rows()  # 得到总共的数量
     db.close()
@@ -55,7 +54,11 @@ def nonexistent_insert_db(check_domain,rc_ttl,mal_type):
     该域名若不存在则插入
     """
     insert_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    col = get_col(target_col)
+    try:
+        col = get_col(target_col)
+    except:
+        print "pymongo connect error"
+        return False
 
     # 域名记录若不存在则插入，存在则不做任何操作
     try:
@@ -115,11 +118,11 @@ def update_time(col, domain, insert_time,cur_time):
             }
         )
     except:
-        print domain,"pymongo errors"
-        pass
+        print domain, "pymongo errors"
+        return
 
 
-def update_data(check_domain,rc_ttl):
+def update_data(check_domain, rc_ttl):
     """
     若该条记录存在，则检查该条记录是否需要进行更新
     """
@@ -128,11 +131,13 @@ def update_data(check_domain,rc_ttl):
     cnames, cnames_ttl = rc_ttl['cnames'], rc_ttl['cnames_ttl']
     ns, ns_ttl = rc_ttl['ns'], rc_ttl['ns_ttl']
     mxs, mxs_ttl = rc_ttl['mxs'], rc_ttl['mxs_ttl']
-
-    col = get_col(target_col)
-    domain_data = col.find({'domain': check_domain},{'dns_rc': 1})  # 得到数据库中已存的记录信息
-    # 得到最新一条的记录
-    domain_dns_rc = domain_data[0]['dns_rc'][-1]
+    try:
+        col = get_col(target_col)
+        domain_data = col.find({'domain': check_domain},{'dns_rc': 1})  # 得到数据库中已存的记录信息
+        domain_dns_rc = domain_data[0]['dns_rc'][-1] # 得到最新一条的记录
+    except:
+        print "pymongo connect error"
+        return
     original_ips, original_ips_ttl = domain_dns_rc['ips'], domain_dns_rc['ips_ttl']
     original_cnames, original_cnames_ttl = domain_dns_rc['cnames'], domain_dns_rc['cnames_ttl']
     original_ns, original_ns_ttl = domain_dns_rc['ns'], domain_dns_rc['ns_ttl']
@@ -143,10 +148,10 @@ def update_data(check_domain,rc_ttl):
 
     if is_same(ips,ips_ttl, original_ips, original_ips_ttl) and is_same(cnames,cnames_ttl,original_cnames,original_cnames_ttl) \
             and is_same(ns,ns_ttl,original_ns,original_ns_ttl) and is_same(mxs,mxs_ttl,original_mxs,original_mxs_ttl):
-        print "记录全部一致，仅更新时间"
+        # print "记录全部一致，仅更新时间"
         update_time(col, check_domain, original_insert_time, cur_time)
     else:
-        print "记录不一致，添加新记录"
+        # print "记录不一致，添加新记录"
         insert_record(col,check_domain, cur_time, rc_ttl)
 
 
@@ -178,7 +183,6 @@ def insert_record(col, domain, cur_time, rc_ttl):
         )
     except:
         print domain, "pymongo errors"
-        pass
 
 
 def create_queue():
@@ -201,7 +205,8 @@ def master_control():
         if insert_flag:
             update_data(check_domain, rc_ttl)
         else:
-            print "域名新插入"
+            #print "域名新插入"
+            pass
         # lock.acquire()
         # lock.release()  # 解锁
         queue.task_done()
@@ -225,7 +230,7 @@ def main():
 if __name__ == '__main__':
     while True:
         main()
-        time.sleep(600)
+        time.sleep(60)
     # schedule.every(2).hours.do(main)  # 12小时循环探测一遍
     # while True:
     #     schedule.run_pending()
