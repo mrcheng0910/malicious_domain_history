@@ -14,6 +14,7 @@
 
 ## 数据库
 使用mongodb数据库
+注意：存在历史信息的数据结构，不存储与上次重复的数据
 
 
 ## 常用数据库命令
@@ -22,3 +23,6 @@ db.getCollection('domain_ttl').find({'data.ips':{'$not': {'$size': 0}}}).count()
 db.getCollection('domain_ttl_new').find({'data.ips': {'$size': 0}}).count(); //查询为空的列表
 db.getCollection('domain_ttl_new').remove({'data.ips': {'$size': 0}});  //查询列表为空的记录
 ```
+
+### 特殊域名
+001697.com，连续四次探测，其记录都不一样

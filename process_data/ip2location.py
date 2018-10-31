@@ -30,5 +30,9 @@ def ip2region(ip=None):
     )
 
 
+
 if __name__ == '__main__':
-    print ip2region('203.195.130.175')['region']
+    result = ip2region('139.199.186.147')
+    print result['region']
+    print result['city']
+    print result['oper']

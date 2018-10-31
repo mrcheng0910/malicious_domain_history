@@ -46,7 +46,7 @@ class MySQL(object):
     def query(self,sql):
         """执行 SELECT 语句"""
         try:
-            self._cur.execute("SET NAMES utf8") 
+            self._cur.execute("SET NAMES utf8")
             result = self._cur.execute(sql)
         except MySQLdb.Error, e:
             self.error_code = e.args[0]

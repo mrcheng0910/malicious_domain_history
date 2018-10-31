@@ -33,7 +33,7 @@ def update():
     for d in domains:
         c[int(d.strip())] += 1
     print total_domains
-    for i in range(37, 3700):
+    for i in range(0, 13):
         print i, '\t', c[i]
         domain_count += c[i]
 
@@ -42,8 +42,24 @@ def update():
     fp.close()
 
 
+def creation_update():
+    domain_count = 0
+    c = Counter()
+    fp = open('creation_updated_white.txt', 'r')
+    domains = fp.readlines()
+    total_domains = len(domains)
+    for d in domains:
+        c[int(d.strip())] += 1
+    print total_domains
+    for i in range(0, 43):
+        print i, '\t', c[i]
+        domain_count += c[i]
+
+    print float(domain_count)/total_domains
+
+    fp.close()
 
 
 # domain_age()
-update()
-
+# update()
+creation_update()

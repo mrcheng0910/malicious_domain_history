@@ -10,5 +10,6 @@ SOURCE_CONFIG = {
     'user': 'root',
     'passwd': 'platform',
     'db': 'malicious_domain_history',
-    'charset': 'utf8'
+    'charset': 'utf8',
+    'use_unicode': True
 }

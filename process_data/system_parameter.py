@@ -16,8 +16,11 @@ def read_dns():
     dns_server = cf.get("dns", "dns_server_wiseye")
     return dns_server
 
+
 def read_time():
     cf = ConfigParser.ConfigParser()
     cf.read('system.conf')
     timeout = cf.getint("time", "timeout")
     return timeout
+
+# print read_time()

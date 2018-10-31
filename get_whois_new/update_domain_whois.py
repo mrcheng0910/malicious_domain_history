@@ -265,7 +265,7 @@ def update_whowas(db, domain):
     try:
         db.update(sql % domain)
     except BaseException,e:
-        print e
+        print domain,e
         return
 
 
@@ -280,7 +280,7 @@ def update_whowas(db, domain):
     try:
         db.update(sql % domain)
     except BaseException, e:
-        print e
+        print domain,e
         return
 
 
@@ -316,7 +316,8 @@ def update_domain_whois():
             print domain, '获取WHOIS和解析WHOIS异常', e
             queue.task_done()  # 任务完成
             time.sleep(1)
-            continue
+            return
+            # continue
         # lock.acquire()  # 锁
         # 依据更新规则，更新数据库中的域名WHOIS相关信息
         try:
