@@ -306,7 +306,7 @@ def update_domain_whois():
     """
     更新域名的WHOIS信息
     """
-    while 1:
+    while queue.qsize():
 
         domain, update_date, expiration_date, details, tld, origin_flag = queue.get()  # 从队列中读出域名信息
         print queue.qsize()   # 剩余的域名数量

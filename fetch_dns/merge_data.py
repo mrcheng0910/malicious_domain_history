@@ -9,18 +9,31 @@ from mysql_config import SOURCE_CONFIG
 """
 
 
+def domain2tb(check_domain):
+    """ 根据域名的首字母，选择存储的数据库表名称"""
+    first_name = check_domain[0]
+    tb_name = ['0jqxyz','16kouv','2efghr','378lnw','459dip','acsmtb']
+    for tb in tb_name:
+        if first_name in tb:
+            return tb+'_history'
+
+
 def delete_empty_rc(domain):
     """
-    删除空白记录
+    删除空白域名DNS记录，但弱最后一条为空白，则不删除
+    方法：1）获取最新记录的last_updated时间
+    2）删除除最新last_updated所有域名的时间
     """
     db = MySQL(SOURCE_CONFIG)
-    # 获取最近一条记录时间
-    max_time_sql = 'select max(last_updated) from domain_dns_history WHERE domain= "%s" '
+    tb_name = domain2tb(domain)
+
+    # 获取最近一条记录的last_updated时间
+    max_time_sql = 'select max(last_updated) from '+ tb_name + ' WHERE domain= "%s" '
     db.query(max_time_sql % domain)
     max_time = db.fetch_all_rows()[0][0]  # 得到最大值
 
     # 删除某次探测为空的数据，但不删除最后一条记录
-    delete_sql = 'DELETE FROM domain_dns_history WHERE (last_updated = insert_time) AND ips = "" AND domain="%s"  AND last_updated != "%s"'
+    delete_sql = 'DELETE FROM '+ tb_name +' WHERE (last_updated = insert_time) AND ips = "" AND domain="%s"  AND last_updated != "%s"'
     db.update(delete_sql % (domain, str(max_time)))
     db.close()
 
@@ -34,8 +47,9 @@ def merge_same_rc(domain):
     domain_rc = []
     rc_last_updated = []
     db = MySQL(SOURCE_CONFIG)
+    tb_name = domain2tb(domain)
 
-    sql = 'select ips, cnames, ns,last_updated from domain_dns_history WHERE domain="%s"'
+    sql = 'select ips, cnames, ns,last_updated from '+ tb_name + ' WHERE domain="%s"'
     db.query(sql % domain)
     rc = db.fetch_all_rows()
 
@@ -48,12 +62,13 @@ def merge_same_rc(domain):
     for i in range(0,len(domain_rc)-1):
         if sorted(domain_rc[i][0]) == sorted(domain_rc[i+1][0]) and sorted(domain_rc[i][1])==sorted(domain_rc[i+1][1]) \
                 and sorted(domain_rc[i][2])==sorted(domain_rc[i+1][2]):  # 前后两次的记录是否一致
-            ##  若相邻一致的话
+
+            ##  若相邻一致的情况
             # 先删除后者记录
-            delete_sql = 'delete from domain_dns_history WHERE domain="%s" and last_updated="%s"'
+            delete_sql = 'delete from '+ tb_name + ' WHERE domain="%s" and last_updated="%s"'
             db.update(delete_sql%(domain,rc_last_updated[i+1]))
             # 再将前者记录的last_updated时间修改为后者记录的时间
-            update_sql = 'update domain_dns_history set last_updated="%s" WHERE domain="%s" AND last_updated="%s"'
+            update_sql = 'update ' + tb_name +' set last_updated="%s" WHERE domain="%s" AND last_updated="%s"'
             db.update(update_sql % (rc_last_updated[i+1],domain,rc_last_updated[i]))
         else:
             pass
@@ -62,6 +77,6 @@ def merge_same_rc(domain):
 
 
 if __name__ == '__main__':
-    domain = '041220.com'
+    domain = '026134.com'
     delete_empty_rc(domain)
     merge_same_rc(domain)

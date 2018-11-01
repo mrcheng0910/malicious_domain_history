@@ -1,2 +1,2 @@
 from . import analyze_data
-from . import process_data
+from . import fetch_dns

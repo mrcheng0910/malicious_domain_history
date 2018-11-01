@@ -1,0 +1,13 @@
+
+HEADLESS=True
+BAN_IMAGES=True
+DRIVER_NAME='chrome'
+MAX_TIMEOUT_SECONDS=60
+WAIT_SECONDS=4
+CLOSED_DRIVER_PERIOD=50
+SHOT_DIRNAME='shot_files'
+ITEMS_FILE='items.pkl'
+
+STORE_TABLE1='web_history'
+STORE_TABLE2='web_lastest'
+LOAD_TABLE='web_history'
