@@ -11,14 +11,17 @@
 mrcheng
 创建：2018.7.19
 """
+
 import sys
 reload(sys) # Python2.5 初始化后会删除 sys.setdefaultencoding 这个方法，我们需要重新载入
 sys.setdefaultencoding('utf-8')
 from datetime import datetime
 from obtaining_dns import manage_rc_ttl
+import os
+import commands
 import threading
-import time
 import random
+import time
 from Queue import Queue
 from threading import Thread
 from data_base import MySQL
@@ -31,7 +34,7 @@ queue = Queue()  # 任务队列
 def fetch_mal_domains():
     """获取待查询的域名列表"""
     db = MySQL(SOURCE_CONFIG)
-    sql = 'SELECT domain,visit_times FROM domain_records'
+    sql = 'SELECT domain,visit_times FROM domain_records LIMIT 0，71622'
     db.query(sql)
     query_domains = db.fetch_all_rows()  # 得到总共的数量
     db.close()
@@ -157,6 +160,8 @@ def master_control():
 
 def main():
     """主函数"""
+
+    delete_logs('./nohup.out')  # 清除日志文件
     print str(datetime.now()), '开始解析域名DNS记录'
     create_queue()
     for q in range(num_thread):  # 开始任务
@@ -165,6 +170,26 @@ def main():
         worker.start()
     queue.join()
     print str(datetime.now()), '结束解析域名DNS记录'
+
+
+def get_file_size(file_path):
+    """获取文件的大小（M）"""
+    file_path = unicode(file_path, 'utf8')
+    file_size = os.path.getsize(file_path)
+    file_size = file_size/float(1024*1024)
+    return int(file_size)
+
+
+def delete_logs(file_path):
+    """清除指定大小的文件"""
+    exist = os.path.exists(file_path)
+    if not exist:
+        print "日志文件不存在，日志自动清理功能不执行，但探测程序正常运行"
+        return
+    file_size = get_file_size(file_path)
+    if file_size >= 50:    # 超过50M 后清除
+        commands.getstatusoutput('cp nohup.out nohup_backup.out') # 备份一次
+        commands.getstatusoutput('cat /dev/null > nohup.out')  # 清理
 
 
 if __name__ == '__main__':
